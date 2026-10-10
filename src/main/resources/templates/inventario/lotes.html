@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Lotes - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('inventario')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+            <div th:replace="~{layout/header :: header('Gestión de Lotes', 'Trazabilidad, control de fechas de caducidad y estados de cuarentena')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: inventario('lotes')}"></div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Lotes registrados</h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código lote</th>
+                                        <th>Producto</th>
+                                        <th>Fabricación</th>
+                                        <th>Vencimiento</th>
+                                        <th>Recepción</th>
+                                        <th>Estado</th>
+                                        <th class="col-actions">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="l : ${lotes}">
+                                        <td>
+                                            <span class="cell-primary" th:text="${l.codigoLote}">LOTE-001</span>
+                                        </td>
+                                        <td>
+                                            <div class="cell-primary" th:text="${l.producto.nombre}">Producto</div>
+                                            <div class="cell-secondary" th:text="${l.producto.codigo}">COD</div>
+                                        </td>
+                                        <td class="cell-secondary" th:text="${l.fechaFabricacion != null ? #temporals.format(l.fechaFabricacion, 'dd/MM/yyyy') : '-'}">-</td>
+                                        <td>
+                                            <span th:if="${l.fechaVencimiento != null}"
+                                                  th:classappend="${l.fechaVencimiento.isBefore(T(java.time.LocalDate).now()) ? 'text-danger fw-semibold' : (l.fechaVencimiento.isBefore(T(java.time.LocalDate).now().plusDays(30)) ? 'text-warning fw-semibold' : '')}"
+                                                  th:text="${#temporals.format(l.fechaVencimiento, 'dd/MM/yyyy')}">
+                                                01/01/2026
+                                            </span>
+                                            <span th:unless="${l.fechaVencimiento != null}" class="cell-secondary">-</span>
+                                        </td>
+                                        <td class="cell-secondary" th:text="${l.fechaRecepcion != null ? #temporals.format(l.fechaRecepcion, 'dd/MM/yyyy, HH:mm') : '-'}">-</td>
+                                        <td>
+                                            <span th:if="${l.estado}" class="badge badge-success">Disponible</span>
+                                            <span th:unless="${l.estado}" class="badge badge-danger">Bloqueado</span>
+                                        </td>
+                                        <td class="col-actions">
+                                            <button th:if="${l.estado}" type="button" class="btn btn-secondary btn-sm"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modalBloquear-' + ${l.idLote}" title="Bloquear lote">
+                                                <i class="bi bi-lock"></i>
+                                                <span>Bloquear</span>
+                                            </button>
+                                            <button th:unless="${l.estado}" type="button" class="btn btn-secondary btn-sm"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modalLiberar-' + ${l.idLote}" title="Liberar lote">
+                                                <i class="bi bi-unlock"></i>
+                                                <span>Liberar</span>
+                                            </button>
+
+                                            <!-- Modal Bloquear -->
+                                            <div class="modal fade text-start" th:id="'modalBloquear-' + ${l.idLote}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content" style="border-radius: var(--radius-card); border: 1px solid var(--border);">
+                                                        <form th:action="@{/lotes/{id}/bloquear(id=${l.idLote})}" method="post">
+                                                            <div class="modal-header border-bottom">
+                                                                <h5 class="modal-title card-title text-danger">Bloquear lote</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body p-4">
+                                                                <p class="cell-secondary mb-3">Al bloquear este lote se impedirá su reserva y despacho en operaciones de picking y salida.</p>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Motivo de bloqueo / cuarentena *</label>
+                                                                    <textarea class="form-control" name="motivo" required placeholder="Ej: Observación de calidad, empaque dañado, etc."></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer border-top">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-danger">Confirmar bloqueo</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Modal Liberar -->
+                                            <div class="modal fade text-start" th:id="'modalLiberar-' + ${l.idLote}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content" style="border-radius: var(--radius-card); border: 1px solid var(--border);">
+                                                        <form th:action="@{/lotes/{id}/liberar(id=${l.idLote})}" method="post">
+                                                            <div class="modal-header border-bottom">
+                                                                <h5 class="modal-title card-title">Liberar lote</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body p-4">
+                                                                <p class="cell-secondary mb-3">El lote volverá a estar disponible para asignaciones FEFO y despachos.</p>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Motivo de liberación *</label>
+                                                                    <textarea class="form-control" name="motivo" required placeholder="Ej: Aprobación de control de calidad tras re-inspección."></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer border-top">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-primary">Confirmar liberación</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(lotes)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">No hay lotes registrados actualmente.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

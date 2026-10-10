@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proveedores - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('catalogo')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column">
+            <div th:replace="~{layout/header :: header('Gestión de Proveedores', 'Directorio de empresas proveedoras y abastecimiento')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: catalogo('proveedores')}"></div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-truck me-2 text-primary"></i>Listado de Proveedores</h6>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalAsociarProducto">
+                                <i class="bi bi-link-45deg me-1"></i> Asociar Producto
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor">
+                                <i class="bi bi-plus-circle me-1"></i> Nuevo Proveedor
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light small text-uppercase text-secondary">
+                                    <tr>
+                                        <th>RUC</th>
+                                        <th>Razón Social</th>
+                                        <th>Dirección</th>
+                                        <th>Contacto</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="prov : ${proveedores}">
+                                        <td class="fw-bold" th:text="${prov.ruc}">20123456789</td>
+                                        <td class="fw-semibold text-dark" th:text="${prov.razonSocial}">Razón Social</td>
+                                        <td th:text="${prov.direccion}">Dirección</td>
+                                        <td>
+                                            <div class="small"><i class="bi bi-telephone text-muted me-1"></i><span th:text="${prov.telefono != null ? prov.telefono : '-'}">-</span></div>
+                                            <div class="small"><i class="bi bi-envelope text-muted me-1"></i><span th:text="${prov.correo != null ? prov.correo : '-'}">-</span></div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${prov.estado}" class="badge bg-success-subtle text-success">Activo</span>
+                                            <span th:unless="${prov.estado}" class="badge bg-secondary-subtle text-muted">Inactivo</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-inline-flex gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        data-bs-toggle="modal"
+                                                        th:data-bs-target="'#modalEditarProv-' + ${prov.idProveedor}" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form th:action="@{/proveedores/cambiar-estado/{id}(id=${prov.idProveedor})}" method="post" class="d-inline">
+                                                    <input type="hidden" name="estado" th:value="${!prov.estado}">
+                                                    <button type="submit" class="btn btn-sm" th:classappend="${prov.estado ? 'btn-outline-danger' : 'btn-outline-success'}"
+                                                            th:title="${prov.estado ? 'Desactivar' : 'Activar'}"
+                                                            onclick="return confirm('¿Seguro de cambiar el estado de este proveedor?');">
+                                                        <i th:class="${prov.estado ? 'bi bi-slash-circle' : 'bi bi-check-circle'}"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <!-- Modal Editar Proveedor -->
+                                            <div class="modal fade text-start" th:id="'modalEditarProv-' + ${prov.idProveedor}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form th:action="@{/proveedores/modificar/{id}(id=${prov.idProveedor})}" method="post">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title fw-bold">Editar Proveedor</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">RUC *</label>
+                                                                    <input type="text" class="form-control" name="ruc" th:value="${prov.ruc}" required maxlength="20">
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">Razón Social *</label>
+                                                                    <input type="text" class="form-control" name="razonSocial" th:value="${prov.razonSocial}" required maxlength="150">
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">Dirección</label>
+                                                                    <input type="text" class="form-control" name="direccion" th:value="${prov.direccion}">
+                                                                </div>
+                                                                <div class="row g-2 mb-3">
+                                                                    <div class="col-6">
+                                                                        <label class="form-label fw-semibold small">Teléfono</label>
+                                                                        <input type="text" class="form-control" name="telefono" th:value="${prov.telefono}" maxlength="20">
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <label class="form-label fw-semibold small">Correo</label>
+                                                                        <input type="email" class="form-control" name="correo" th:value="${prov.correo}" maxlength="150">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(proveedores)}">
+                                        <td colspan="6" class="text-center py-4 text-muted small">No hay proveedores registrados.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Nuevo Proveedor -->
+                <div class="modal fade" id="modalNuevoProveedor" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/proveedores/guardar}" th:object="${proveedor}" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">Nuevo Proveedor</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">RUC *</label>
+                                        <input type="text" class="form-control" th:field="*{ruc}" required minlength="11" maxlength="11" placeholder="Ej: 20555666777">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Razón Social *</label>
+                                        <input type="text" class="form-control" th:field="*{razonSocial}" required maxlength="150" placeholder="Ej: Distribuciones SAC">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Dirección</label>
+                                        <input type="text" class="form-control" th:field="*{direccion}">
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label fw-semibold small">Teléfono</label>
+                                            <input type="text" class="form-control" th:field="*{telefono}" maxlength="30">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label fw-semibold small">Correo</label>
+                                            <input type="email" class="form-control" th:field="*{correo}" maxlength="150">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Registrar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Asociar Producto a Proveedor -->
+                <div class="modal fade" id="modalAsociarProducto" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/proveedores/asociar-producto}" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">Asociar Producto con Proveedor</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Proveedor *</label>
+                                        <select class="form-select" name="idProveedor" required>
+                                            <option value="">-- Seleccione Proveedor --</option>
+                                            <option th:each="p : ${proveedores}" th:value="${p.idProveedor}" th:text="${p.razonSocial}">Prov</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Producto *</label>
+                                        <select class="form-select" name="idProducto" required>
+                                            <option value="">-- Seleccione Producto --</option>
+                                            <option th:each="prod : ${productos}" th:value="${prod.idProducto}" th:text="${prod.codigo + ' - ' + prod.nombre}">Prod</option>
+                                        </select>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label fw-semibold small">Precio Referencial</label>
+                                            <input type="number" step="0.01" class="form-control" name="precioRef" placeholder="0.00">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label fw-semibold small">Código Proveedor</label>
+                                            <input type="text" class="form-control" name="codigoProv" placeholder="Ej: PROV-P10">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Asociar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

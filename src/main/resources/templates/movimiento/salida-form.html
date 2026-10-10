@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salida Directa FEFO - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('operaciones')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column">
+            <div th:replace="~{layout/header :: header('Despacho de Salida Directa', 'Salida de existencias bajo política de rotación FEFO / FIFO')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: operaciones('movimientos')}"></div>
+
+                <div class="card shadow-sm border-0 max-w-75">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-box-arrow-up-right me-2 text-success"></i>Despacho Automático de Lotes por Criterio FEFO</h6>
+                            <span class="badge bg-success-subtle text-success">First Expired, First Out</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-info py-2 px-3 small border-0 bg-info-subtle text-info-emphasis mb-4">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            El sistema seleccionará y descontará automáticamente de las existencias aquellos lotes con fecha de vencimiento más próxima y en estado habilitado.
+                        </div>
+
+                        <form th:action="@{/movimientos/salida}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Producto a Despachar *</label>
+                                    <select class="form-select" name="idProducto" required>
+                                        <option value="">-- Seleccionar Producto --</option>
+                                        <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.codigo + ' - ' + p.nombre + ' (' + p.unidadPresentacion + ')'}">Prod</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Ubicación Origen *</label>
+                                    <select class="form-select" name="idUbicacion" required>
+                                        <option value="">-- Seleccionar Ubicación --</option>
+                                        <option th:each="u : ${ubicaciones}" th:value="${u.idUbicacion}" th:text="${u.codigo + ' - ' + u.nombre}">Ubi</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small">Cantidad Total Solicitada *</label>
+                                    <input type="number" class="form-control" name="cantidadTotal" min="1" required placeholder="Unidades a despachar">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small">Documento de Referencia</label>
+                                    <input type="text" class="form-control" name="documentoReferencia" maxlength="100" placeholder="Ej: GUIA-DESP-001">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small">Observación</label>
+                                    <input type="text" class="form-control" name="observacion" placeholder="Motivo o destino del despacho">
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a th:href="@{/movimientos}" class="btn btn-outline-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Procesar Salida FEFO
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

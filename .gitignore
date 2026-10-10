@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Planes de Implementación ###
+PLAN_*.md
+
+### Base de Datos y Scripts Locales ###
+*.sql
+*.db
+*.h2.db
+cookies.txt

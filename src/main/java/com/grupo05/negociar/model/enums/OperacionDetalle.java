@@ -1,0 +1,6 @@
+package com.grupo05.negociar.model.enums;
+
+public enum OperacionDetalle {
+    SUMA,
+    RESTA
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Órdenes de Picking - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('distribucion')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+            <div th:replace="~{layout/header :: header('Órdenes de Picking', 'Recolección física en estanterías y preparación de despachos')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: distribucion('pickings')}"></div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Listado de procesos de picking</h2>
+                        <a th:href="@{/solicitudes}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <span>Ir a solicitudes</span>
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código picking</th>
+                                        <th>Solicitud asociada</th>
+                                        <th>Responsable</th>
+                                        <th>Fecha inicio</th>
+                                        <th>Confirmación</th>
+                                        <th>Estado</th>
+                                        <th class="col-actions">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="pk : ${pickings}">
+                                        <td>
+                                            <span class="cell-primary" th:text="${pk.codigoPicking}">PCK-001</span>
+                                        </td>
+                                        <td>
+                                            <span class="cell-primary" th:text="${pk.solicitud != null ? pk.solicitud.codigoSolicitud : '-'}">SOL-001</span>
+                                            <div class="cell-secondary" th:text="${pk.solicitud != null ? 'Destino: ' + pk.solicitud.destino : ''}">Destino</div>
+                                        </td>
+                                        <td class="cell-secondary" th:text="${pk.responsable != null ? pk.responsable : '-'}">Responsable</td>
+                                        <td class="cell-secondary" th:text="${#temporals.format(pk.fechaInicio, 'dd/MM/yyyy, HH:mm')}">01/01/2026</td>
+                                        <td class="cell-secondary" th:text="${pk.fechaConfirmacion != null ? #temporals.format(pk.fechaConfirmacion, 'dd/MM/yyyy, HH:mm') : '-'}">-</td>
+                                        <td>
+                                            <span class="badge"
+                                                  th:classappend="${pk.estado.name() == 'PENDIENTE' ? 'badge-warning' : (pk.estado.name() == 'EN_PROCESO' ? 'badge-info' : (pk.estado.name() == 'CONFIRMADO' ? 'badge-success' : 'badge-danger'))}"
+                                                  th:text="${pk.estado}">ESTADO</span>
+                                        </td>
+                                        <td class="col-actions">
+                                            <a th:href="@{/pickings/{id}(id=${pk.idPicking})}" class="btn btn-secondary btn-sm" title="Gestionar recogida">
+                                                <span>Gestionar</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(pickings)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">No hay órdenes de picking en curso ni finalizadas.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

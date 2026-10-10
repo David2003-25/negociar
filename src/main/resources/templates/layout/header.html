@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <header th:fragment="header(titulo, subtitulo)" class="topbar sticky-top">
+        <div class="d-flex align-items-center justify-content-between w-100 gap-3">
+            <!-- Barra de búsqueda global (como en la referencia) -->
+            <div class="topbar-search-wrapper flex-grow-1">
+
+            </div>
+
+            <!-- Perfil de usuario y botón de cerrar sesión (sin campana de notificaciones) -->
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div class="topbar-user">
+                    <div class="topbar-user-avatar">
+                        <span
+                            th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombres != null and !session.usuarioLogueado.nombres.isEmpty()}"
+                            th:text="${#strings.substring(session.usuarioLogueado.nombres, 0, 1)}">A</span>
+                        <span
+                            th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombres != null}">A</span>
+                    </div>
+                    <div class="d-none d-sm-block text-start">
+                        <div class="topbar-user-name"
+                            th:text="${session.usuarioLogueado != null ? session.usuarioLogueado.nombres + ' ' + session.usuarioLogueado.apellidos : 'Administrador'}">
+                            Administrador
+                        </div>
+                        <div class="topbar-user-role"
+                            th:text="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null ? session.usuarioLogueado.rol.nombre : 'ADMINISTRADOR'}">
+                            ADMINISTRADOR
+                        </div>
+                    </div>
+                </div>
+
+                <a th:href="@{/logout}" class="btn-topbar-logout" title="Cerrar sesión" aria-label="Cerrar sesión">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+</body>
+
+</html>

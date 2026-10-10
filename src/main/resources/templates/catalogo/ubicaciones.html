@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubicaciones - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('catalogo')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column">
+            <div th:replace="~{layout/header :: header('Gestión de Ubicaciones', 'Maestro de almacenes, pasillos y estanterías')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: catalogo('ubicaciones')}"></div>
+
+                <!-- Filtros de Tipo y Botón Nueva Ubicación -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small fw-bold text-secondary text-uppercase"><i class="bi bi-funnel me-1"></i> Filtrar Tipo:</span>
+                            <a th:href="@{/ubicaciones}" class="btn btn-sm btn-outline-secondary">Todos</a>
+                            <a th:href="@{/ubicaciones(tipo='ALMACEN')}" class="btn btn-sm btn-outline-primary">Almacén</a>
+                            <a th:href="@{/ubicaciones(tipo='ESTANTERIA')}" class="btn btn-sm btn-outline-info">Estantería</a>
+                            <a th:href="@{/ubicaciones(tipo='PASILLO')}" class="btn btn-sm btn-outline-dark">Pasillo</a>
+                            <a th:href="@{/ubicaciones(tipo='MERMA')}" class="btn btn-sm btn-outline-danger">Merma</a>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaUbicacion">
+                            <i class="bi bi-plus-circle me-1"></i> Nueva Ubicación
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-geo-alt me-2 text-primary"></i>Ubicaciones del Almacén</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light small text-uppercase text-secondary">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="u : ${ubicaciones}">
+                                        <td class="fw-bold" th:text="${u.codigo}">UBI-001</td>
+                                        <td class="fw-semibold text-dark" th:text="${u.nombre}">Nombre</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${u.tipo == 'MERMA' ? 'bg-danger' : (u.tipo == 'ESTANTERIA' ? 'bg-info text-dark' : 'bg-primary')}"
+                                                  th:text="${u.tipo}">ALMACEN</span>
+                                        </td>
+                                        <td th:text="${u.descripcion}">Descripción</td>
+                                        <td>
+                                            <span th:if="${u.estado}" class="badge bg-success-subtle text-success">Activa</span>
+                                            <span th:unless="${u.estado}" class="badge bg-secondary-subtle text-muted">Inactiva</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-inline-flex gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        data-bs-toggle="modal"
+                                                        th:data-bs-target="'#modalEditarUbi-' + ${u.idUbicacion}" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form th:if="${u.estado}" th:action="@{/ubicaciones/desactivar/{id}(id=${u.idUbicacion})}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar" onclick="return confirm('¿Seguro de desactivar esta ubicación?');">
+                                                        <i class="bi bi-slash-circle"></i>
+                                                    </button>
+                                                </form>
+                                                <form th:unless="${u.estado}" th:action="@{/ubicaciones/activar/{id}(id=${u.idUbicacion})}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Activar">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <!-- Modal Editar Ubicacion -->
+                                            <div class="modal fade text-start" th:id="'modalEditarUbi-' + ${u.idUbicacion}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form th:action="@{/ubicaciones/modificar/{id}(id=${u.idUbicacion})}" method="post">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title fw-bold">Editar Ubicación</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">Código *</label>
+                                                                    <input type="text" class="form-control" name="codigo" th:value="${u.codigo}" required maxlength="30" readonly>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">Nombre *</label>
+                                                                    <input type="text" class="form-control" name="nombre" th:value="${u.nombre}" required maxlength="100">
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">Tipo *</label>
+                                                                    <select class="form-select" name="tipo" required>
+                                                                        <option value="ALMACEN" th:selected="${u.tipo == 'ALMACEN'}">ALMACEN</option>
+                                                                        <option value="ESTANTERIA" th:selected="${u.tipo == 'ESTANTERIA'}">ESTANTERIA</option>
+                                                                        <option value="PASILLO" th:selected="${u.tipo == 'PASILLO'}">PASILLO</option>
+                                                                        <option value="MERMA" th:selected="${u.tipo == 'MERMA'}">MERMA</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold small">Descripción</label>
+                                                                    <textarea class="form-control" name="descripcion" rows="3" th:text="${u.descripcion}"></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(ubicaciones)}">
+                                        <td colspan="6" class="text-center py-4 text-muted small">No hay ubicaciones registradas con este criterio.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Nueva Ubicacion -->
+                <div class="modal fade" id="modalNuevaUbicacion" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/ubicaciones/guardar}" th:object="${ubicacion}" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">Nueva Ubicación</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Código *</label>
+                                        <input type="text" class="form-control" th:field="*{codigo}" required maxlength="30" placeholder="Ej: UBI-E02">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Nombre *</label>
+                                        <input type="text" class="form-control" th:field="*{nombre}" required maxlength="100" placeholder="Ej: Estantería B-2">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Tipo *</label>
+                                        <select class="form-select" th:field="*{tipo}" required>
+                                            <option value="ALMACEN">ALMACEN</option>
+                                            <option value="ESTANTERIA">ESTANTERIA</option>
+                                            <option value="PASILLO">PASILLO</option>
+                                            <option value="MERMA">MERMA</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Descripción</label>
+                                        <textarea class="form-control" th:field="*{descripcion}" rows="3" placeholder="Detalles de posición o capacidad..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Registrar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

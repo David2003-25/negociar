@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Alertas - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('inventario')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+            <div th:replace="~{layout/header :: header('Panel de Alertas', 'Monitoreo de quiebres de stock y lotes próximos a vencer')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: inventario('alertas')}"></div>
+
+                <!-- Tabs de Navegación de Alertas -->
+                <ul class="nav nav-tabs mb-4" id="alertasTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="stock-tab" data-bs-toggle="tab" data-bs-target="#tab-stock" type="button" role="tab">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>Quiebre de stock</span>
+                            <span class="badge badge-danger" th:text="${alertasStock != null ? #lists.size(alertasStock) : 0}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="vto-tab" data-bs-toggle="tab" data-bs-target="#tab-vto" type="button" role="tab">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Lotes próximos a vencer (&le; 30 días)</span>
+                            <span class="badge badge-warning" th:text="${lotesPorVencer != null ? #lists.size(lotesPorVencer) : 0}">0</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="alertasTabsContent">
+                    <!-- Tab Quiebre de Stock -->
+                    <div class="tab-pane fade show active" id="tab-stock" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Productos con existencias por debajo del stock mínimo</h2>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Producto</th>
+                                                <th>Presentación</th>
+                                                <th class="num">Stock actual</th>
+                                                <th class="num">Stock mínimo</th>
+                                                <th class="num">Déficit</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="a : ${alertasStock}">
+                                                <td>
+                                                    <span class="cell-secondary" th:text="${a.producto.codigo}">PRD-001</span>
+                                                </td>
+                                                <td>
+                                                    <div class="cell-primary" th:text="${a.producto.nombre}">Producto</div>
+                                                </td>
+                                                <td>
+                                                    <span class="cell-secondary" th:text="${a.producto.unidadPresentacion}">UNIDAD</span>
+                                                </td>
+                                                <td class="num" th:text="${a.stockActual}">0</td>
+                                                <td class="num" th:text="${a.stockMinimo}">0</td>
+                                                <td class="num" style="color: var(--danger);" th:text="${a.stockMinimo - a.stockActual}">0</td>
+                                                <td>
+                                                    <span class="badge badge-danger">Crítico</span>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${alertasStock == null or #lists.isEmpty(alertasStock)}">
+                                                <td colspan="7" class="text-center py-4 text-muted">
+                                                    Todos los productos cuentan con existencias superiores a su stock mínimo.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Vencimientos -->
+                    <div class="tab-pane fade" id="tab-vto" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Lotes con riesgo de caducidad</h2>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Lote</th>
+                                                <th>Producto</th>
+                                                <th>Fabricación</th>
+                                                <th>Vencimiento</th>
+                                                <th class="col-actions">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="l : ${lotesPorVencer}">
+                                                <td>
+                                                    <span class="cell-primary" th:text="${l.codigoLote}">LOTE-001</span>
+                                                </td>
+                                                <td th:text="${l.producto.nombre}">Producto</td>
+                                                <td class="cell-secondary" th:text="${l.fechaFabricacion != null ? #temporals.format(l.fechaFabricacion, 'dd/MM/yyyy') : '-'}">-</td>
+                                                <td>
+                                                    <span class="badge badge-warning"
+                                                          th:text="${#temporals.format(l.fechaVencimiento, 'dd/MM/yyyy')}">
+                                                        01/01/2026
+                                                    </span>
+                                                </td>
+                                                <td class="col-actions">
+                                                    <a th:href="@{/movimientos/salida}" class="btn btn-secondary btn-sm" title="Priorizar salida FEFO">
+                                                        <span>Priorizar FEFO</span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${lotesPorVencer == null or #lists.isEmpty(lotesPorVencer)}">
+                                                <td colspan="5" class="text-center py-4 text-muted">
+                                                    No se detectan lotes con riesgo de caducidad dentro de la ventana de 30 días.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

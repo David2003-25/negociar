@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Sub-Nav Catálogo -->
+    <div th:fragment="catalogo(activeTab)" class="mb-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a th:href="@{/productos}" class="nav-link" th:classappend="${activeTab == 'productos'} ? 'active' : ''">
+                    <i class="bi bi-box-seam"></i> <span>Productos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/categorias}" class="nav-link" th:classappend="${activeTab == 'categorias'} ? 'active' : ''">
+                    <i class="bi bi-tags"></i> <span>Categorías</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/proveedores}" class="nav-link" th:classappend="${activeTab == 'proveedores'} ? 'active' : ''">
+                    <i class="bi bi-truck"></i> <span>Proveedores</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/ubicaciones}" class="nav-link" th:classappend="${activeTab == 'ubicaciones'} ? 'active' : ''">
+                    <i class="bi bi-geo-alt"></i> <span>Ubicaciones</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sub-Nav Inventario -->
+    <div th:fragment="inventario(activeTab)" class="mb-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a th:href="@{/inventario}" class="nav-link" th:classappend="${activeTab == 'existencias'} ? 'active' : ''">
+                    <i class="bi bi-layers"></i> <span>Existencias / Stock</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/lotes}" class="nav-link" th:classappend="${activeTab == 'lotes'} ? 'active' : ''">
+                    <i class="bi bi-upc-scan"></i> <span>Lotes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/alertas}" class="nav-link" th:classappend="${activeTab == 'alertas'} ? 'active' : ''">
+                    <i class="bi bi-exclamation-triangle"></i> <span>Alertas</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sub-Nav Operaciones (Sin botones duplicados) -->
+    <div th:fragment="operaciones(activeTab)" class="mb-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a th:href="@{/movimientos}" class="nav-link" th:classappend="${activeTab == 'movimientos'} ? 'active' : ''">
+                    <i class="bi bi-arrow-left-right"></i> <span>Historial de Movimientos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/ajustes}" class="nav-link" th:classappend="${activeTab == 'ajustes'} ? 'active' : ''">
+                    <i class="bi bi-sliders"></i> <span>Ajustes de Conteo</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sub-Nav Distribución -->
+    <div th:fragment="distribucion(activeTab)" class="mb-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a th:href="@{/solicitudes}" class="nav-link" th:classappend="${activeTab == 'solicitudes'} ? 'active' : ''">
+                    <i class="bi bi-clipboard-check"></i> <span>Solicitudes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/pickings}" class="nav-link" th:classappend="${activeTab == 'pickings'} ? 'active' : ''">
+                    <i class="bi bi-cart-check"></i> <span>Órdenes de Picking</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sub-Nav Administración -->
+    <div th:fragment="administracion(activeTab)" class="mb-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a th:href="@{/usuarios}" class="nav-link" th:classappend="${activeTab == 'usuarios'} ? 'active' : ''">
+                    <i class="bi bi-people"></i> <span>Usuarios y Roles</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/auditoria}" class="nav-link" th:classappend="${activeTab == 'auditoria'} ? 'active' : ''">
+                    <i class="bi bi-journal-text"></i> <span>Auditoría</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>

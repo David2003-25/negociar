@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios y Seguridad - NEGOCIAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+    <div class="d-flex" style="min-height: 100vh;">
+        <div th:replace="~{layout/sidebar :: sidebar('administracion')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+            <div th:replace="~{layout/header :: header('Usuarios y Roles', 'Gestiona quién accede al sistema y sus permisos de seguridad')}"></div>
+
+            <main class="container-fluid p-4">
+                <div th:replace="~{layout/alertas :: alertas}"></div>
+                <div th:replace="~{layout/subnav :: administracion('usuarios')}"></div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Usuarios registrados</h2>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuario">
+                            <i class="bi bi-person-plus"></i>
+                            <span>Nuevo usuario</span>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Correo electrónico</th>
+                                        <th>Rol</th>
+                                        <th>Último acceso</th>
+                                        <th>Estado</th>
+                                        <th class="col-actions">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="u : ${usuarios}">
+                                        <td>
+                                            <div class="cell-primary" th:text="${u.nombres + ' ' + u.apellidos}">Nombres</div>
+                                            <div class="cell-secondary" th:text="${'ID: ' + u.idUsuario}">ID: 1</div>
+                                        </td>
+                                        <td th:text="${u.correo}">usuario@negociar.com</td>
+                                        <td>
+                                            <span class="badge badge-info" th:text="${u.rol != null ? u.rol.nombre : 'Sin Rol'}">ADMIN</span>
+                                        </td>
+                                        <td>
+                                            <span class="cell-secondary"
+                                                  th:text="${u.ultimoAcceso != null ? #temporals.format(u.ultimoAcceso, 'dd/MM/yyyy, HH:mm') : 'Sin acceso registrado'}">
+                                                Sin acceso registrado
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${u.estado}" class="badge badge-success">Activo</span>
+                                            <span th:unless="${u.estado}" class="badge badge-neutral">Inactivo</span>
+                                        </td>
+                                        <td class="col-actions">
+                                            <div class="d-inline-flex align-items-center gap-1">
+                                                <button type="button" class="icon-btn"
+                                                        data-bs-toggle="modal"
+                                                        th:data-bs-target="'#modalEditarUsuario-' + ${u.idUsuario}"
+                                                        title="Editar usuario"
+                                                        aria-label="Editar usuario">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form th:action="@{/usuarios/cambiar-estado/{id}(id=${u.idUsuario})}" method="post" class="d-inline">
+                                                    <input type="hidden" name="estado" th:value="${!u.estado}">
+                                                    <button type="submit"
+                                                            class="icon-btn"
+                                                            th:classappend="${u.estado ? 'is-danger' : ''}"
+                                                            th:title="${u.estado ? 'Desactivar usuario' : 'Activar usuario'}"
+                                                            th:aria-label="${u.estado ? 'Desactivar usuario' : 'Activar usuario'}"
+                                                            onclick="return confirm('¿Seguro de cambiar el estado de acceso de este usuario?');">
+                                                        <i th:class="${u.estado ? 'bi bi-person-x' : 'bi bi-person-check'}"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <!-- Modal Editar Usuario -->
+                                            <div class="modal fade text-start" th:id="'modalEditarUsuario-' + ${u.idUsuario}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content" style="border-radius: var(--radius-card); border: 1px solid var(--border);">
+                                                        <form th:action="@{/usuarios/modificar/{id}(id=${u.idUsuario})}" method="post">
+                                                            <div class="modal-header border-bottom">
+                                                                <h5 class="modal-title card-title">Editar usuario</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body p-4">
+                                                                <div class="row g-3 mb-3">
+                                                                    <div class="col-6">
+                                                                        <label class="form-label">Nombres *</label>
+                                                                        <input type="text" class="form-control" name="nombres" th:value="${u.nombres}" required maxlength="100">
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <label class="form-label">Apellidos *</label>
+                                                                        <input type="text" class="form-control" name="apellidos" th:value="${u.apellidos}" required maxlength="100">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Correo electrónico *</label>
+                                                                    <input type="email" class="form-control" name="correo" th:value="${u.correo}" required maxlength="150">
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Nueva contraseña (opcional)</label>
+                                                                    <input type="password" class="form-control" name="passwordHash" placeholder="Dejar en blanco para mantener la actual">
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Rol asignado *</label>
+                                                                    <select class="form-select" name="idRol" required>
+                                                                        <option th:each="r : ${roles}"
+                                                                                th:value="${r.idRol}"
+                                                                                th:text="${r.nombre + ' - ' + r.descripcion}"
+                                                                                th:selected="${u.rol != null and u.rol.idRol == r.idRol}">
+                                                                            Rol
+                                                                        </option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer border-top">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                                        <td colspan="6" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Nuevo Usuario -->
+                <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="border-radius: var(--radius-card); border: 1px solid var(--border);">
+                            <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
+                                <div class="modal-header border-bottom">
+                                    <h5 class="modal-title card-title">Nuevo usuario</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label">Nombres *</label>
+                                            <input type="text" class="form-control" th:field="*{nombres}" required maxlength="100" placeholder="Ej: Juan">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Apellidos *</label>
+                                            <input type="text" class="form-control" th:field="*{apellidos}" required maxlength="100" placeholder="Ej: Pérez">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Correo electrónico *</label>
+                                        <input type="email" class="form-control" th:field="*{correo}" required maxlength="150" placeholder="ejemplo@negociar.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Contraseña *</label>
+                                        <input type="password" class="form-control" th:field="*{passwordHash}" required placeholder="••••••••">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Rol asignado *</label>
+                                        <select class="form-select" name="idRol" required>
+                                            <option value="">-- Seleccionar Rol --</option>
+                                            <option th:each="r : ${roles}" th:value="${r.idRol}" th:text="${r.nombre + ' - ' + r.descripcion}">Rol</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-top">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Registrar usuario</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

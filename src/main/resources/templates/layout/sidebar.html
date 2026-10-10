@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <aside th:fragment="sidebar(activeMenu)" class="sidebar flex-shrink-0">
+        <!-- Logo / Brand Mark -->
+        <a th:href="@{/inicio}" class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <span class="brand-text">NEGOCIAR</span>
+        </a>
+
+        <!-- Menú Plano KISS (Tipografía e íconos más pequeños) -->
+        <nav class="sidebar-nav flex-grow-1" aria-label="Navegación principal">
+            <a th:href="@{/inicio}" class="nav-link"
+               th:classappend="${activeMenu == 'inicio'} ? 'active' : ''">
+                <i class="bi bi-speedometer2"></i>
+                <span>Inicio</span>
+            </a>
+
+            <a th:href="@{/productos}" class="nav-link"
+               th:classappend="${activeMenu == 'catalogo'} ? 'active' : ''">
+                <i class="bi bi-tags"></i>
+                <span>Catálogo</span>
+            </a>
+
+            <a th:href="@{/inventario}" class="nav-link"
+               th:classappend="${activeMenu == 'inventario'} ? 'active' : ''">
+                <i class="bi bi-layers"></i>
+                <span>Inventario</span>
+            </a>
+
+            <a th:href="@{/movimientos}" class="nav-link"
+               th:classappend="${activeMenu == 'operaciones'} ? 'active' : ''">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Operaciones</span>
+            </a>
+
+            <a th:href="@{/solicitudes}" class="nav-link"
+               th:classappend="${activeMenu == 'distribucion'} ? 'active' : ''">
+                <i class="bi bi-truck"></i>
+                <span>Distribución</span>
+            </a>
+
+            <a th:href="@{/reportes}" class="nav-link"
+               th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reportes</span>
+            </a>
+
+            <a th:href="@{/usuarios}" class="nav-link"
+               th:classappend="${activeMenu == 'administracion'} ? 'active' : ''">
+                <i class="bi bi-shield-lock"></i>
+                <span>Administración</span>
+            </a>
+        </nav>
+    </aside>
+</body>
+</html>
